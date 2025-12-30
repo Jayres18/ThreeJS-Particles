@@ -7,6 +7,7 @@ import GUI from "lil-gui";
  */
 // Debug
 const gui = new GUI();
+gui.hide();
 
 // Canvas
 const canvas = document.querySelector("canvas.webgl");
@@ -20,10 +21,22 @@ const scene = new THREE.Scene();
 const textureLoader = new THREE.TextureLoader();
 const particleTexture = textureLoader.load("/textures/particles/5.png");
 const moonARM = textureLoader.load("./textures/moon/moonARM.jpg");
-const moonColor = textureLoader.load("./textures/moon/moonColor.jpg");
+const moonColor = textureLoader.load("./textures/moon/moon.webp");
 const moonNormal = textureLoader.load("./textures/moon/moonNormal.jpg");
-
 moonColor.colorSpace = THREE.SRGBColorSpace;
+
+// moonARM.repeat.set(4, 4);
+// moonColor.repeat.set(4, 4);
+// moonNormal.repeat.set(4, 4);
+
+// moonARM.wrapS = THREE.RepeatWrapping;
+// moonColor.wrapS = THREE.RepeatWrapping;
+// moonNormal.wrapS = THREE.RepeatWrapping;
+
+// moonARM.wrapT = THREE.RepeatWrapping;
+// moonColor.wrapT = THREE.RepeatWrapping;
+// moonNormal.wrapT = THREE.RepeatWrapping;
+
 /**
  * Particles
  */
@@ -32,6 +45,7 @@ const particlesGeometry = new THREE.BufferGeometry();
 const count = 5000;
 
 const positions = new Float32Array(count * 3); // Multiply by 3 because each position is composed of 3 values (x, y, z)
+const colors = new Float32Array(count * 3);
 
 for (
   let i = 0;
@@ -39,18 +53,20 @@ for (
   i++ // Multiply by 3 for same reason
 ) {
   positions[i] = (Math.random() - 0.5) * 10; // Math.random() - 0.5 to have a random value between -0.5 and +0.5
+  colors[i] = Math.random();
 }
 
 particlesGeometry.setAttribute(
   "position",
   new THREE.BufferAttribute(positions, 3)
 ); // Create the Three.js BufferAttribute and specify that each information is composed of 3 values
+particlesGeometry.setAttribute("color", new THREE.BufferAttribute(colors, 3));
 
 // Material
 const particlesMaterial = new THREE.PointsMaterial();
 particlesMaterial.size = 0.1;
 particlesMaterial.sizeAttenuation = true;
-particlesMaterial.color = new THREE.Color("#80b7ebff");
+particlesMaterial.color = new THREE.Color("#80b7eb");
 // particlesMaterial.map = particleTexture;
 particlesMaterial.transparent = true;
 particlesMaterial.alphaMap = particleTexture;
@@ -58,6 +74,7 @@ particlesMaterial.alphaMap = particleTexture;
 // particlesMaterial.depthTest = false;
 particlesMaterial.depthWrite = false;
 particlesMaterial.blending = THREE.AdditiveBlending;
+particlesMaterial.vertexColors = true;
 
 // Points = Mesh
 const particles = new THREE.Points(particlesGeometry, particlesMaterial);
@@ -67,6 +84,7 @@ scene.add(particles);
 const sphere = new THREE.Mesh(
   new THREE.SphereGeometry(1, 32, 16),
   new THREE.MeshStandardMaterial({
+    color: "#e6dddd",
     map: moonColor,
     aoMap: moonARM,
     roughnessMap: moonARM,
@@ -80,7 +98,7 @@ scene.add(sphere);
  * Lights
  */
 // Ambient light
-const ambientLight = new THREE.AmbientLight("#ffffffff", 0.3);
+const ambientLight = new THREE.AmbientLight("#ffffff", 1);
 scene.add(ambientLight);
 
 /**
@@ -138,6 +156,20 @@ const clock = new THREE.Clock();
 
 const tick = () => {
   const elapsedTime = clock.getElapsedTime();
+
+  // Update particles
+  particles.rotation.y = elapsedTime * 0.02; // particle rotation
+
+  // to create a wave of particles.
+  // for (let i = 0; i < count; i++) {
+  //   let i3 = i * 3;
+
+  //   const x = particlesGeometry.attributes.position.array[i3];
+  //   particlesGeometry.attributes.position.array[i3 + 1] = Math.sin(
+  //     elapsedTime + x
+  //   );
+  // }
+  // particlesGeometry.attributes.position.needsUpdate = true;
 
   // Update controls
   controls.update();
